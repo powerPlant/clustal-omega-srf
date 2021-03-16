@@ -1,0 +1,49 @@
+Bootstrap: docker
+From: ubuntu:focal
+Stage: build
+
+%post
+  ## Download build prerequisites
+  apt-get update
+  DEBIAN_FRONTEND=noninteractive apt-get -y install libargtable2-0 libargtable2-dev wget build-essential libz-dev cmake make
+  
+  ## Build
+  cd /opt
+  wget http://www.clustal.org/omega/clustal-omega-1.2.4.tar.gz -O clustal-omega-1.2.4.tar.gz
+  tar xzvf clustal-omega-1.2.4.tar.gz
+  cd clustal-omega-1.2.4
+  ./configure
+  make
+  make install
+
+  ## remove symlink /usr/local/man to allow copy of /usr/local/* in next step
+  rm -f /usr/local/man
+
+Bootstrap: docker
+From: ubuntu:focal
+Stage: final
+
+%labels
+Maintainer bjoern.pauly@plantandfood.co.nz
+Version 1.2.4 
+
+%files from build
+  /usr/local/* /usr/local/
+
+%post
+  ## Download dependencies
+  apt-get update
+  DEBIAN_FRONTEND=noninteractive apt-get -y install libargtable2-0 libgomp1
+  apt-get clean
+
+%runscript
+  exec clustalo "$@"
+
+#==OR==
+#
+#if [ -x /usr/local/bin/$SINGULARITY_NAME ]; then
+#    exec $SINGULARITY_NAME "$@"
+#else
+#  /bin/echo -e "This Singularity image cannot provide a single entrypoint. Please use \"singularity exec $SINGULARITY_NAME <cmd>\", where <cmd> is one of the following:\n"
+#  exec ls /usr/local/bin
+#fi
