@@ -1,1 +1,3 @@
-Singularity recipe files for badread, a long read simulator that can imitate many types of read problems.
+Singularity recipe files for Clustal Omega, a general purpose multiple sequence alignment (MSA) program for protein and DNA/RNA.
+
+http://www.clustal.org/omega/
